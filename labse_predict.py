@@ -1,27 +1,31 @@
+import gc
+
 import numpy as np
 import pandas as pd
 import torch
 from transformers import AutoTokenizer
 
+
 class IntentRecognizer:
     def __init__(self, device):
+        memory_before = torch.cuda.memory_allocated(0)
         self._device = device
         self._tokenizer = AutoTokenizer.from_pretrained("cointegrated/LaBSE-en-ru")
         self._model = torch.load('cool_model.pt')
-        self._model.to(device)
+        self._model = self._model.to(device)
+        memory_after = torch.cuda.memory_allocated(0)
+        print((memory_after - memory_before) / 1024 / 1024, "MB")
         self._labels_df = pd.read_csv('labels.csv', sep=';')
 
     def _label_num_to_label_text(self, label_num: int):
-        found_row = self._labels_df[self._labels_df.iloc[:,0] == label_num]
+        found_row = self._labels_df[self._labels_df.iloc[:, 0] == label_num]
         if len(found_row) < 1:
             return label_num
-        return found_row.iloc[0,1]
-
+        return found_row.iloc[0, 1]
 
     def predict(self, msg):
-        memory_before = torch.cuda.memory_allocated(0)
-        memory_after = torch.cuda.memory_allocated(0)
-        print((memory_after - memory_before) / 1024 / 1024, "MB")
+        gc.collect()
+        torch.cuda.empty_cache()
         sentences = msg
         encoded_input = self._tokenizer(sentences, padding=True, truncation=True, max_length=64, return_tensors='pt')
         encoded_input['input_ids'] = encoded_input['input_ids'].to(self._device)
