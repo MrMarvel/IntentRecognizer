@@ -1,0 +1,53 @@
+# Используем базовый образ с установленным Conda
+FROM nvidia/cuda:11.1.1-devel-ubuntu20.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# Install system dependencies for convinient development inside container
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get upgrade -y && apt-get install -y \
+    tmux \
+    openssh-server \
+    tree \
+    less \
+    vim \
+    curl \
+    wget \
+    build-essential \
+    python3-pip \
+    mesa-utils \
+    sudo \
+    apt-utils \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# PYTHON 3.10
+RUN add-apt-repository --yes ppa:deadsnakes/ppa && apt-get update --yes --quiet
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get install --yes --quiet --no-install-recommends \
+    python3.10 \
+    python3.10-dev \
+    python3.10-distutils \
+    python3.10-lib2to3 \
+    python3.10-gdbm \
+    python3.10-tk
+RUN sudo apt list
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 999 \
+    && update-alternatives --config python3 && ln -s /usr/bin/python3 /usr/bin/python
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+
+# Установка зависимостей
+RUN --mount=type=cache,target=/root/.cache \
+    pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 -vvv
+COPY requirements.txt/ ./
+RUN --mount=type=cache,target=/root/.cache \
+    pip3 install -r requirements.txt
+
+WORKDIR usr/src/app
+
+COPY ./ ./
+
+EXPOSE 22
+
+# Запускаем labse.py
+CMD ["python3", "labse.py"]

@@ -1,0 +1,16 @@
+name: nlpintents
+channels:
+  - pytorch
+  - huggingface
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - bertopic
+  - conda-tree
+  - python=3.10
+  - pytorch-cuda=11.8
+  - torchvision
+  - torchaudio
+  - numpy<1.24.0
+prefix: C:\Utilities\Miniconda3\envs\nlpintents
