@@ -13,4 +13,5 @@ dependencies:
   - torchvision
   - torchaudio
   - numpy<1.24.0
+  - rasa
 prefix: C:\Utilities\Miniconda3\envs\nlpintents

@@ -8,3 +8,5 @@ torchaudio
 torchvision
 transformers
 wheel
+--extra-index-url https://pypi.rasa.com/simple
+rasa
